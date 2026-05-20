@@ -196,17 +196,17 @@ The `composer dev` command uses `concurrently` to start:
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/login` | Sanctum login |
-| `POST` | `/api/register` | User registration |
-| `POST` | `/api/logout` | Revoke token |
-| `GET` | `/api/videos` | List all videos |
-| `POST` | `/api/videos` | Upload a new video |
-| `DELETE` | `/api/videos/{id}` | Delete a video |
-| `GET` | `/api/audios` | List all audios |
-| `POST` | `/api/audios` | Upload a new audio |
-| `DELETE` | `/api/audios/{id}` | Delete an audio |
 | `GET` | `/api/profile` | Get authenticated user profile |
-| `PUT` | `/api/profile` | Update user profile |
+| `POST` | `/api/profile` | Update user profile |
+| `POST` | `/api/profile/password` | Update user password |
+| `GET` | `/api/admin/videos` | List all videos |
+| `POST` | `/api/admin/videos` | Upload a new video |
+| `GET` | `/api/admin/videos/{id}` | Get a single video |
+| `GET` | `/api/admin/audios` | List all audios |
+| `POST` | `/api/admin/audios` | Upload a new audio |
+| `GET` | `/api/admin/audios/{id}` | Get a single audio |
+
+> All endpoints require **Sanctum authentication** (`auth:sanctum` middleware). Auth routes (`/login`, `/register`, `/logout`) are handled by **Laravel Fortify** via `web.php`.
 
 ---
 
