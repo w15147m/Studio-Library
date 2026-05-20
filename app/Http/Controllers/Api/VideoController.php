@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class VideoController extends Controller
 {
@@ -43,5 +44,21 @@ class VideoController extends Controller
         }
 
         return response()->json($videos);
+    }
+
+    /**
+     * Stream a video using HTTP Range requests.
+     */
+    public function stream(string $id): BinaryFileResponse
+    {
+        $filePath = public_path("uploads/video/{$id}.mp4");
+        if (!File::exists($filePath)) {
+            abort(404);
+        }
+
+        return response()->file($filePath, [
+            'Accept-Ranges' => 'bytes',
+            'Content-Type' => 'video/mp4',
+        ]);
     }
 }

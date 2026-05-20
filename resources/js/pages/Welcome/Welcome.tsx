@@ -105,15 +105,24 @@ const Welcome = () => {
                                         {video.filename}
                                     </p>
 
-                                    <div className="mt-6 flex items-center justify-between gap-4">
+                                    <div className="mt-6 flex flex-col sm:flex-row gap-3">
                                         <Link 
                                             to={`/admin/video/${video.id}`}
-                                            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-semibold rounded-xl transition duration-200 shadow-sm"
+                                            className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold rounded-xl transition duration-200 shadow-sm"
                                         >
                                             <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M8 5v14l11-7z"/>
                                             </svg>
-                                            Play Video
+                                            Play HLS (Adaptive)
+                                        </Link>
+                                        <Link 
+                                            to={`/admin/video-stream/${video.id}`}
+                                            className="w-full inline-flex items-center justify-center gap-2 px-3.5 py-2.5 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm font-semibold border border-gray-200 dark:border-gray-700 rounded-xl transition duration-200 shadow-sm"
+                                        >
+                                            <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                            </svg>
+                                            Play Stream (Range)
                                         </Link>
                                     </div>
                                 </div>

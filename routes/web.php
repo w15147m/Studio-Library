@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Auth\SocialAuthController;
+use App\Http\Controllers\Api\VideoController;
 
 use App\Livewire\Pages\Home\HomePage;
 use App\Livewire\Pages\Profile\ProfilePage;
@@ -28,6 +29,8 @@ Route::prefix('auth')->group(function () {
 
 // Protected routes (require authentication)
 Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/videos/stream/{id}', [VideoController::class, 'stream']);
+
     // Admin Studio Master Entry Point (React SPA)
     Route::get('/admin/{path?}', function () {
         return response(view('master-react', ['title' => 'Admin Studio']))
