@@ -14,8 +14,9 @@
         <div class="hidden md:flex items-center gap-10">
             <!-- Navigation Links -->
             <nav class="flex items-center gap-6 font-medium text-sm text-gray-700 dark:text-gray-300">
-                <a href="/" wire:navigate class="hover:text-brand-500 transition-colors">Home</a>
-                <a href="#" class="hover:text-brand-500 transition-colors">Documentation</a>
+                <a href="{{ route('home') }}" wire:navigate class="hover:text-brand-500 transition-colors">Home</a>
+                <a href="{{ route('videos') }}" wire:navigate class="hover:text-brand-500 transition-colors">Videos</a>
+                <a href="{{ route('audios') }}" wire:navigate class="hover:text-brand-500 transition-colors">Audios</a>
             </nav>
 
             <!-- Actions -->

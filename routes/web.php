@@ -8,10 +8,16 @@ use App\Http\Controllers\Api\AudioController;
 
 use App\Livewire\Pages\Home\HomePage;
 use App\Livewire\Pages\Profile\ProfilePage;
+use App\Livewire\Pages\Videos\VideosPage;
+use App\Livewire\Pages\Audios\AudiosPage;
 
 
 // Public Landing Page (Livewire Master)
 Route::get('/', HomePage::class)->name('home');
+
+// Public media pages (guests can watch & listen)
+Route::get('/videos', VideosPage::class)->name('videos');
+Route::get('/audios', AudiosPage::class)->name('audios');
 
 // Authentication pages (public)
 Route::get('/signin', function () {
