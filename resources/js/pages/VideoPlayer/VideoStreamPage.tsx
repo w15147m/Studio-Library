@@ -14,10 +14,16 @@ interface Video {
 const VideoStreamPage = () => {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    
     const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
+
     const [video, setVideo] = useState<Video | null>(null);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
+    
+    // UI Popover States
+    const [menuOpen, setMenuOpen] = useState<boolean>(false);
     const [playbackRate, setPlaybackRate] = useState<number>(1);
 
     useEffect(() => {
@@ -38,13 +44,16 @@ const VideoStreamPage = () => {
             });
     }, [id]);
 
-    const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const value = parseFloat(e.target.value);
-        setPlaybackRate(value);
-        if (videoRef.current) {
-            videoRef.current.playbackRate = value;
-        }
-    };
+    // Close settings popover on clicking outside the player container
+    useEffect(() => {
+        const handleOutsideClick = (e: MouseEvent) => {
+            if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleOutsideClick);
+        return () => document.removeEventListener('mousedown', handleOutsideClick);
+    }, []);
 
     if (loading) {
         return (
@@ -109,37 +118,53 @@ const VideoStreamPage = () => {
             </div>
 
             {/* Custom Video Container */}
-            <div className="mb-8 relative w-full max-w-4xl mx-auto bg-black rounded-3xl overflow-hidden shadow-2xl border border-gray-800">
-                {/* Top Control Bar Overlay */}
-                <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-center bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10">
-                    <span className="text-sm font-semibold text-white/95 tracking-wide">
-                        HTTP Range / Partial Stream
-                    </span>
-                    
-                    {/* Speed Selector */}
-                    <div className="flex items-center gap-2">
-                        <label htmlFor="stream-speed-select" className="text-xs font-medium text-white/60">Speed</label>
-                        <select
-                            id="stream-speed-select"
-                            value={playbackRate}
-                            onChange={handleSpeedChange}
-                            className="bg-white/10 hover:bg-white/20 border border-white/10 text-white text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none transition cursor-pointer"
-                        >
-                            <option value="0.5" className="text-black">0.5x</option>
-                            <option value="1" className="text-black">1.0x (Normal)</option>
-                            <option value="1.25" className="text-black">1.25x</option>
-                            <option value="1.5" className="text-black">1.5x</option>
-                            <option value="2" className="text-black">2.0x</option>
-                        </select>
-                    </div>
-                </div>
+            <div 
+                ref={containerRef}
+                className="mb-8 relative w-full max-w-4xl mx-auto bg-black rounded-3xl overflow-hidden shadow-2xl border border-gray-800 group"
+            >
+                {/* Settings Gear Button - Bottom-Right next to native three dots */}
+                <button 
+                    onClick={() => setMenuOpen((prev) => !prev)} 
+                    className="absolute bottom-16 right-[12px] z-20 p-2.5 bg-transparent hover:bg-black/60 text-white/80 hover:text-white rounded-full transition duration-200 cursor-pointer group"
+                    title="Speed Settings"
+                >
+                    <svg className="size-5 transition-transform duration-500 group-hover:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </button>
 
-                {/* Direct Video Node */}
+                {/* Speed Dropdown Menu */}
+                {menuOpen && (
+                    <div className="absolute bottom-28 right-[12px] z-30 w-52 bg-black/85 backdrop-blur-md border border-white/10 rounded-2xl p-2.5 shadow-2xl text-white animate-in slide-in-from-bottom-2 duration-150">
+                        <div className="px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-white/50">
+                            Playback Speed
+                        </div>
+                        <div className="h-[1px] bg-white/10 my-1"></div>
+                        {[0.5, 0.75, 1, 1.25, 1.5, 2].map((rate) => (
+                            <button
+                                key={rate}
+                                onClick={() => {
+                                    setPlaybackRate(rate);
+                                    if (videoRef.current) videoRef.current.playbackRate = rate;
+                                    setMenuOpen(false);
+                                }}
+                                className={`w-full flex items-center justify-between px-3 py-2 text-sm rounded-xl transition cursor-pointer text-left ${playbackRate === rate ? 'bg-brand-500 font-bold text-white' : 'hover:bg-white/10'}`}
+                            >
+                                <span>{rate === 1 ? '1.0x (Normal)' : `${rate}x`}</span>
+                                {playbackRate === rate && <span className="text-xs">✓</span>}
+                            </button>
+                        ))}
+                    </div>
+                )}
+
+                {/* Direct Video Node with controlsList='noplaybackrate' */}
                 <video
                     ref={videoRef}
                     className="w-full aspect-video block focus:outline-none"
                     src={streamUrl}
                     controls
+                    controlsList="noplaybackrate"
                     autoPlay
                     preload="auto"
                     playsInline
