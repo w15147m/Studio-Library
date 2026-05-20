@@ -7,7 +7,7 @@
                 <path d="M2.25 11.25L11.25 2.25C11.5 2 12.022 1.95 12.35 2l8 1.5c.5.1.9.5 1 1l1.5 8c.05.328 0 .85-.25 1.1l-9 9c-.2.2-.6.2-.8 0l-9.5-9.5c-.2-.2-.2-.6 0-.8z" fill="currentColor" opacity="0.8"/>
                 <circle cx="17.5" cy="6.5" r="1.5" fill="white"/>
             </svg>
-            Starter Kit
+            Studio Library
         </a>
 
         <!-- Desktop Nav & Actions -->
