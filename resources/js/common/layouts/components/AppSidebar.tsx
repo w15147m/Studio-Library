@@ -26,10 +26,6 @@ const AppSidebar = () => {
             ), 
             path: "/admin/audios" 
         },
-
-        { name: "Products", icon: <BoxIcon className="h-5 w-5" />, path: "/admin/products" },
-        { name: "Catalog", icon: <TableIcon className="h-5 w-5" />, path: "/admin/catalog" },
-        { name: "Hero Slider", icon: <PageIcon className="h-5 w-5" />, path: "/admin/hero-slider" },
     ];
 
     return (
@@ -45,10 +41,10 @@ const AppSidebar = () => {
             <div className={`flex h-20 items-center px-6 ${!isExpanded && !isHovered ? "justify-center" : "justify-start"}`}>
                 <Link to="/admin" className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-500 text-white font-bold">
-                        P
+                        S
                     </div>
                     {(isExpanded || isHovered) && (
-                        <span className="text-xl font-bold text-gray-900 dark:text-white">PrintDesign</span>
+                        <span className="text-xl font-bold text-gray-900 dark:text-white">Studio Library</span>
                     )}
                 </Link>
             </div>
@@ -74,15 +70,6 @@ const AppSidebar = () => {
                 </nav>
             </div>
 
-            {/* Sidebar Footer */}
-            {(isExpanded || isHovered) && (
-                <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-                    <div className="rounded-xl bg-gray-50 p-4 dark:bg-gray-800/50">
-                        <h4 className="text-xs font-bold text-gray-900 dark:text-white">Need Help?</h4>
-                        <p className="mt-1 text-[11px] text-gray-500 dark:text-gray-400">Check our documentation for quick start guide.</p>
-                    </div>
-                </div>
-            )}
         </aside>
     );
 };
