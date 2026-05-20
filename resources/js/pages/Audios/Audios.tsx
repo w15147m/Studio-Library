@@ -22,6 +22,22 @@ const Audios = () => {
     // Selected audio to play
     const [activeAudio, setActiveAudio] = useState<AudioItem | null>(null);
 
+    const activeIndex = activeAudio ? audios.findIndex(a => a.id === activeAudio.id) : -1;
+    const hasPrev = activeIndex > 0;
+    const hasNext = activeIndex < audios.length - 1 && activeIndex !== -1;
+
+    const handlePrev = () => {
+        if (hasPrev) {
+            setActiveAudio(audios[activeIndex - 1]);
+        }
+    };
+
+    const handleNext = () => {
+        if (hasNext) {
+            setActiveAudio(audios[activeIndex + 1]);
+        }
+    };
+
     useEffect(() => {
         apiService.fetchData('/api/admin/audios')
             .then((data: any) => {
@@ -174,6 +190,10 @@ const Audios = () => {
                     title={activeAudio.title}
                     filename={activeAudio.filename}
                     onClose={() => setActiveAudio(null)}
+                    onPrev={handlePrev}
+                    onNext={handleNext}
+                    hasPrev={hasPrev}
+                    hasNext={hasNext}
                 />
             )}
 

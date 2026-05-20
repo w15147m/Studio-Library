@@ -5,9 +5,22 @@ interface AudioPlayerProps {
     title: string;
     filename: string;
     onClose: () => void;
+    onPrev?: () => void;
+    onNext?: () => void;
+    hasPrev?: boolean;
+    hasNext?: boolean;
 }
 
-const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onClose }) => {
+const AudioPlayer: React.FC<AudioPlayerProps> = ({ 
+    audioId, 
+    title, 
+    filename, 
+    onClose,
+    onPrev,
+    onNext,
+    hasPrev = false,
+    hasNext = false
+}) => {
     const audioRef = useRef<HTMLAudioElement>(null);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -17,6 +30,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onC
     const [volume, setVolume] = useState<number>(1);
     const [playbackRate, setPlaybackRate] = useState<number>(1);
     const [menuOpen, setMenuOpen] = useState<boolean>(false);
+    const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
 
     const streamUrl = `/admin/audios/stream/${audioId}`;
 
@@ -74,6 +88,10 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onC
     const handleEnded = () => {
         setIsPlaying(false);
         setCurrentTime(0);
+        // Automatically play next track if available
+        if (hasNext && onNext) {
+            onNext();
+        }
     };
 
     // Handle seek/scrub
@@ -105,6 +123,76 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onC
         return () => document.removeEventListener('mousedown', handleOutsideClick);
     }, []);
 
+    // Collapsed/Mini view UI
+    if (isCollapsed) {
+        return (
+            <div 
+                ref={containerRef}
+                className="fixed bottom-6 right-6 z-40 bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-full py-2.5 px-4 shadow-2xl text-white flex items-center gap-3 animate-in fade-in zoom-in duration-200"
+            >
+                {/* Hidden native audio tag */}
+                <audio
+                    ref={audioRef}
+                    src={streamUrl}
+                    onTimeUpdate={handleTimeUpdate}
+                    onLoadedMetadata={handleLoadedMetadata}
+                    onEnded={handleEnded}
+                    preload="auto"
+                />
+
+                {/* Collapsed view left icon */}
+                <div className="flex items-center shrink-0">
+                    <svg className={`size-4 text-brand-500 ${isPlaying ? 'animate-bounce' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    </svg>
+                </div>
+
+                {/* Title */}
+                <div className="max-w-[120px] overflow-hidden truncate text-xs font-semibold select-none pr-1">
+                    {title}
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-1.5 border-l border-white/10 pl-2">
+                    <button 
+                        onClick={togglePlay}
+                        className="p-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-full transition cursor-pointer"
+                    >
+                        {isPlaying ? (
+                            <svg className="size-3" fill="currentColor" viewBox="0 0 24 24">
+                                <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
+                            </svg>
+                        ) : (
+                            <svg className="size-3 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                            </svg>
+                        )}
+                    </button>
+
+                    <button 
+                        onClick={() => setIsCollapsed(false)}
+                        className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Expand Player"
+                    >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5" />
+                        </svg>
+                    </button>
+
+                    <button 
+                        onClick={onClose}
+                        className="p-1 text-gray-400 hover:text-red-500 rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Close Player"
+                    >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div 
             ref={containerRef}
@@ -126,14 +214,27 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onC
                     <h4 className="font-bold text-sm text-white truncate" title={title}>{title}</h4>
                     <span className="text-xs text-gray-400 font-mono truncate block" title={filename}>{filename}</span>
                 </div>
-                <button 
-                    onClick={onClose} 
-                    className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
-                >
-                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
+                
+                <div className="flex items-center gap-1 shrink-0">
+                    <button 
+                        onClick={() => setIsCollapsed(true)} 
+                        className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Minimize Player"
+                    >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 13H5" />
+                        </svg>
+                    </button>
+                    <button 
+                        onClick={onClose} 
+                        className="p-1 text-gray-400 hover:text-white rounded-full hover:bg-white/10 transition cursor-pointer"
+                        title="Close Player"
+                    >
+                        <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             {/* Equalizer animation bar overlay if playing */}
@@ -184,21 +285,48 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({ audioId, title, filename, onC
                     />
                 </div>
 
-                {/* Play / Pause */}
-                <button 
-                    onClick={togglePlay}
-                    className="p-3 bg-brand-500 hover:bg-brand-600 text-white rounded-full shadow-lg hover:scale-105 transition cursor-pointer"
-                >
-                    {isPlaying ? (
+                {/* Left/Right switching and Play/Pause Controls */}
+                <div className="flex items-center gap-3.5">
+                    {/* Previous Button */}
+                    <button 
+                        onClick={onPrev} 
+                        disabled={!hasPrev} 
+                        className="p-1.5 text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition cursor-pointer"
+                        title="Previous Track"
+                    >
                         <svg className="size-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
+                            <path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/>
                         </svg>
-                    ) : (
-                        <svg className="size-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                    </button>
+
+                    {/* Play / Pause */}
+                    <button 
+                        onClick={togglePlay}
+                        className="p-3 bg-brand-500 hover:bg-brand-600 text-white rounded-full shadow-lg hover:scale-105 transition cursor-pointer"
+                    >
+                        {isPlaying ? (
+                            <svg className="size-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path fillRule="evenodd" d="M6.75 5.25a.75.75 0 01.75-.75H9a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H7.5a.75.75 0 01-.75-.75V5.25zm7.5 0A.75.75 0 0115 4.5h1.5a.75.75 0 01.75.75v13.5a.75.75 0 01-.75.75H15a.75.75 0 01-.75-.75V5.25z" clipRule="evenodd" />
+                            </svg>
+                        ) : (
+                            <svg className="size-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path fillRule="evenodd" d="M4.5 5.653c0-1.426 1.529-2.33 2.779-1.643l11.54 6.348c1.295.712 1.295 2.573 0 3.285L7.28 19.991c-1.25.687-2.779-.217-2.779-1.643V5.653z" clipRule="evenodd" />
+                            </svg>
+                        )}
+                    </button>
+
+                    {/* Next Button */}
+                    <button 
+                        onClick={onNext} 
+                        disabled={!hasNext} 
+                        className="p-1.5 text-gray-400 hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition cursor-pointer"
+                        title="Next Track"
+                    >
+                        <svg className="size-5" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M16 6h2v12h-2zm-10.5 12l8.5-6-8.5-6z"/>
                         </svg>
-                    )}
-                </button>
+                    </button>
+                </div>
 
                 {/* Speed settings cog (YouTube Style) */}
                 <div className="relative">
