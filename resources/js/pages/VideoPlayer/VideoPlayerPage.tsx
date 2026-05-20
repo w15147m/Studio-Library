@@ -5,6 +5,7 @@ import HlsPlayer from './components/HlsPlayer';
 
 interface Video {
     id: string;
+    video_id: string;
     title: string;
     filename: string;
     url: string;
@@ -19,11 +20,10 @@ const VideoPlayerPage = () => {
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        apiService.fetchData('/api/admin/videos')
+        apiService.fetchData(`/api/admin/videos/${id}`)
             .then((data: any) => {
-                const foundVideo = data.find((v: Video) => v.id === id);
-                if (foundVideo) {
-                    setVideo(foundVideo);
+                if (data) {
+                    setVideo(data);
                 } else {
                     setError('Video not found.');
                 }
@@ -115,7 +115,7 @@ const VideoPlayerPage = () => {
                     <div className="flex flex-col gap-1">
                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">HLS Index Link</span>
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300 font-mono overflow-x-auto whitespace-nowrap">
-                            {video.is_transcoded ? `/uploads/video/hls/${video.id}/master.m3u8` : 'Not generated'}
+                            {video.is_transcoded ? `/uploads/video/hls/${video.video_id}/master.m3u8` : 'Not generated'}
                         </span>
                     </div>
                 </div>

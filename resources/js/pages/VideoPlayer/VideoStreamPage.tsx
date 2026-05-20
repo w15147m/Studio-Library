@@ -4,6 +4,7 @@ import apiService from '@/common/services/api.service';
 
 interface Video {
     id: string;
+    video_id: string;
     title: string;
     filename: string;
     url: string;
@@ -20,11 +21,10 @@ const VideoStreamPage = () => {
     const [playbackRate, setPlaybackRate] = useState<number>(1);
 
     useEffect(() => {
-        apiService.fetchData('/api/admin/videos')
+        apiService.fetchData(`/api/admin/videos/${id}`)
             .then((data: any) => {
-                const foundVideo = data.find((v: Video) => v.id === id);
-                if (foundVideo) {
-                    setVideo(foundVideo);
+                if (data) {
+                    setVideo(data);
                 } else {
                     setError('Video not found.');
                 }

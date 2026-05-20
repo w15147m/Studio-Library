@@ -16,4 +16,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::get('/admin/videos', [VideoController::class, 'index']);
     Route::post('/admin/videos', [VideoController::class, 'store']);
+    Route::get('/admin/videos/{id}', [VideoController::class, 'show']);
 });

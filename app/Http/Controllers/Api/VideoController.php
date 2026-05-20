@@ -22,6 +22,7 @@ class VideoController extends Controller
             
             return [
                 'id' => (string) $video->id,
+                'video_id' => $videoId,
                 'title' => $video->title,
                 'filename' => $video->filename,
                 'url' => $video->is_transcoded ? asset($masterPath) : asset("uploads/video/{$video->filename}"),
@@ -68,8 +69,10 @@ class VideoController extends Controller
         $command = 'php ' . base_path('artisan') . ' video:transcode-hls > /dev/null 2>&1 &';
         exec($command);
 
+        $videoId = pathinfo($video->filename, PATHINFO_FILENAME);
         $mappedVideo = [
             'id' => (string) $video->id,
+            'video_id' => $videoId,
             'title' => $video->title,
             'filename' => $video->filename,
             'url' => asset("uploads/video/{$video->filename}"),
@@ -80,6 +83,25 @@ class VideoController extends Controller
             'success' => true,
             'video' => $mappedVideo,
         ], 201);
+    }
+
+    /**
+     * Display the specified video.
+     */
+    public function show(string $id): JsonResponse
+    {
+        $video = Video::findOrFail($id);
+        $videoId = pathinfo($video->filename, PATHINFO_FILENAME);
+        $masterPath = "uploads/video/hls/{$videoId}/master.m3u8";
+
+        return response()->json([
+            'id' => (string) $video->id,
+            'video_id' => $videoId,
+            'title' => $video->title,
+            'filename' => $video->filename,
+            'url' => $video->is_transcoded ? asset($masterPath) : asset("uploads/video/{$video->filename}"),
+            'is_transcoded' => $video->is_transcoded,
+        ]);
     }
 
     /**
