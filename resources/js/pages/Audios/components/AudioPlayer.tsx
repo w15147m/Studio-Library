@@ -128,7 +128,7 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
         return (
             <div 
                 ref={containerRef}
-                className="fixed bottom-6 right-6 z-40 bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-full py-2.5 px-4 shadow-2xl text-white flex items-center gap-3 animate-in fade-in zoom-in duration-200"
+                className="fixed bottom-6 right-6 left-6 md:left-auto md:w-96 z-40 bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-full py-3 px-5 shadow-2xl text-white flex items-center justify-between animate-in fade-in zoom-in duration-200"
             >
                 {/* Hidden native audio tag */}
                 <audio
@@ -140,20 +140,18 @@ const AudioPlayer: React.FC<AudioPlayerProps> = ({
                     preload="auto"
                 />
 
-                {/* Collapsed view left icon */}
-                <div className="flex items-center shrink-0">
-                    <svg className={`size-4 text-brand-500 ${isPlaying ? 'animate-bounce' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                {/* Collapsed view left icon & title */}
+                <div className="flex items-center gap-2.5 overflow-hidden min-w-0 pr-2">
+                    <svg className={`size-4.5 text-brand-500 shrink-0 ${isPlaying ? 'animate-bounce' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
                     </svg>
-                </div>
-
-                {/* Title */}
-                <div className="max-w-[120px] overflow-hidden truncate text-xs font-semibold select-none pr-1">
-                    {title}
+                    <div className="overflow-hidden truncate text-xs font-semibold select-none">
+                        {title}
+                    </div>
                 </div>
 
                 {/* Controls */}
-                <div className="flex items-center gap-1.5 border-l border-white/10 pl-2">
+                <div className="flex items-center gap-2 shrink-0 pl-2 border-l border-white/10">
                     <button 
                         onClick={togglePlay}
                         className="p-1.5 bg-brand-500 hover:bg-brand-600 text-white rounded-full transition cursor-pointer"
