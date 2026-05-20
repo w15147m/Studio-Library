@@ -15,4 +15,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/profile/password', [UserProfileController::class, 'updatePassword']);
 
     Route::get('/admin/videos', [VideoController::class, 'index']);
+    Route::post('/admin/videos', [VideoController::class, 'store']);
 });

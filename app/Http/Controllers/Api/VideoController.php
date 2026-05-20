@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\JsonResponse;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use App\Models\Video;
+use Illuminate\Http\Request;
 
 class VideoController extends Controller
 {
@@ -14,36 +16,70 @@ class VideoController extends Controller
      */
     public function index(): JsonResponse
     {
-        $videoDir = public_path('uploads/video');
-        if (!File::exists($videoDir)) {
-            return response()->json([]);
-        }
-
-        $files = File::files($videoDir);
-        $videos = [];
-
-        foreach ($files as $file) {
-            if ($file->getExtension() === 'mp4') {
-                $fileName = $file->getFilename();
-                $videoId = pathinfo($fileName, PATHINFO_FILENAME);
-                $masterPath = "uploads/video/hls/{$videoId}/master.m3u8";
-                $isTranscoded = File::exists(public_path($masterPath));
-
-                // Generate a clean title
-                $title = str_replace('_', ' ', $videoId);
-                $title = ucwords($title);
-
-                $videos[] = [
-                    'id' => $videoId,
-                    'title' => $title,
-                    'filename' => $fileName,
-                    'url' => $isTranscoded ? asset($masterPath) : asset("uploads/video/{$fileName}"),
-                    'is_transcoded' => $isTranscoded,
-                ];
-            }
-        }
+        $videos = Video::all()->map(function ($video) {
+            $videoId = pathinfo($video->filename, PATHINFO_FILENAME);
+            $masterPath = "uploads/video/hls/{$videoId}/master.m3u8";
+            
+            return [
+                'id' => (string) $video->id,
+                'title' => $video->title,
+                'filename' => $video->filename,
+                'url' => $video->is_transcoded ? asset($masterPath) : asset("uploads/video/{$video->filename}"),
+                'is_transcoded' => $video->is_transcoded,
+            ];
+        });
 
         return response()->json($videos);
+    }
+
+    /**
+     * Store a newly uploaded video.
+     */
+    public function store(Request $request): JsonResponse
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'video' => 'required|file|mimes:mp4,mov,avi,wmv',
+        ]);
+
+        $file = $request->file('video');
+        $extension = $file->getClientOriginalExtension();
+        
+        // Clean title to create a slug-like part for the filename
+        $cleanTitle = preg_replace('/[^a-zA-Z0-9]/', '_', strtolower($request->input('title')));
+        $fileName = 'video_' . $cleanTitle . '_' . time() . '.' . $extension;
+
+        // Move the file to public/uploads/video
+        $videoDir = public_path('uploads/video');
+        if (!File::exists($videoDir)) {
+            File::makeDirectory($videoDir, 0755, true);
+        }
+
+        $file->move($videoDir, $fileName);
+
+        // Create database record
+        $video = Video::create([
+            'title' => $request->input('title'),
+            'filename' => $fileName,
+            'is_transcoded' => false,
+        ]);
+
+        // Trigger transcoding command asynchronously in the background
+        $command = 'php ' . base_path('artisan') . ' video:transcode-hls > /dev/null 2>&1 &';
+        exec($command);
+
+        $mappedVideo = [
+            'id' => (string) $video->id,
+            'title' => $video->title,
+            'filename' => $video->filename,
+            'url' => asset("uploads/video/{$video->filename}"),
+            'is_transcoded' => false,
+        ];
+
+        return response()->json([
+            'success' => true,
+            'video' => $mappedVideo,
+        ], 201);
     }
 
     /**
@@ -51,7 +87,8 @@ class VideoController extends Controller
      */
     public function stream(string $id): BinaryFileResponse
     {
-        $filePath = public_path("uploads/video/{$id}.mp4");
+        $video = Video::findOrFail($id);
+        $filePath = public_path("uploads/video/{$video->filename}");
         if (!File::exists($filePath)) {
             abort(404);
         }
