@@ -3,6 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\RoleAndPermissionSeeder;
+use Database\Seeders\VideoSeeder;
+use Database\Seeders\AudioSeeder;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -23,5 +26,6 @@ class DatabaseSeeder extends Seeder
 
         $this->call(RoleAndPermissionSeeder::class);
         $this->call(VideoSeeder::class);
+        $this->call(AudioSeeder::class);
     }
 }
